@@ -1,0 +1,2 @@
+# ai-based-event-organizer-final
+AI BASED EVENT ORGANIZER TO HELP ORGANIZE YOUR EVENTS EASILy
