@@ -1,0 +1,3553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Event Manager Pro</title>
+
+
+<style>
+:root {
+  --bg: #10266d;
+  --surface: rgba(255, 255, 255, 0.09);
+  --surface-2: rgba(255, 255, 255, 0.13);
+  --text: #f1f5ff;
+  --muted: #aab6d0;
+  --line: rgba(255, 255, 255, 0.16);
+  --primary: #8b7cff;
+  --primary-hover: #a69aff;
+  --success: #34d399;
+  --danger: #fb7185;
+  --shadow: 0 12px 35px rgba(0, 0, 0, 0.22);
+  --radius: 18px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(ellipse at 15% 10%, rgba(99, 91, 255, .25), transparent 42%),
+    radial-gradient(ellipse at 85% 80%, rgba(14, 165, 233, .16), transparent 40%),
+    linear-gradient(135deg, #0b1020, #15152e 55%, #101b31);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+
+/* Layout */
+.app {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+}
+
+.sidebar {
+  background: rgba(10, 15, 32, .72);
+  color: #f8fafc;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  border-right: 1px solid var(--line);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 18px;
+  margin-bottom: 24px;
+}
+
+.logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #635bff, #c084fc);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(99, 91, 255, .35);
+}
+
+.nav button {
+  width: 100%;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #aab6d0;
+  text-align: left;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 5px;
+  font-weight: 600;
+  transition: background .2s, color .2s, border-color .2s;
+}
+
+.nav button.active,
+.nav button:hover {
+  background: rgba(139, 124, 255, .18);
+  color: #fff;
+  border-color: rgba(167, 139, 250, .25);
+}
+
+.main {
+  padding: 32px;
+  min-width: 0;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* Dashboard cards */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  transition: background .2s, border-color .2s, transform .2s;
+}
+
+.card:hover {
+  background: var(--surface-2);
+  border-color: rgba(255, 255, 255, .25);
+}
+
+.metric-val {
+  font-size: 26px;
+  font-weight: 800;
+  margin-top: 6px;
+}
+
+/* Forms */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.field { margin-bottom: 12px; }
+
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #d7def0;
+}
+
+input, select, textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 11px 12px;
+  outline: none;
+  color: var(--text);
+  background: rgba(255, 255, 255, .06);
+  transition: border-color .2s, background .2s, box-shadow .2s;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: rgba(167, 139, 250, .9);
+  background: rgba(255, 255, 255, .1);
+  box-shadow: 0 0 0 3px rgba(139, 124, 255, .17);
+}
+
+select option {
+  background: #171b32;
+  color: #f1f5ff;
+}
+
+/* Buttons */
+.btn {
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform .2s, background .2s, box-shadow .2s;
+}
+
+.btn:hover { transform: translateY(-1px); }
+
+.btn.primary {
+  background: linear-gradient(135deg, #7165ff, #9b70f5);
+  color: #fff;
+  box-shadow: 0 7px 20px rgba(99, 91, 255, .25);
+}
+
+.btn.primary:hover {
+  background: linear-gradient(135deg, #8277ff, #ad83ff);
+  box-shadow: 0 9px 25px rgba(99, 91, 255, .35);
+}
+
+.btn.secondary {
+  background: rgba(255, 255, 255, .09);
+  color: #e5eaff;
+  border-color: var(--line);
+}
+
+.btn.secondary:hover {
+  background: rgba(255, 255, 255, .15);
+}
+
+/* AI plan */
+.plan-container {
+  display: grid;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.plan-header-card {
+  background: linear-gradient(135deg, rgba(99, 91, 255, .65), rgba(124, 58, 237, .48));
+  color: #fff;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, .22);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.plan-header-card h2 {
+  margin: 0 0 8px;
+  font-size: 24px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.stat-box {
+  background: rgba(255, 255, 255, .12);
+  border: 1px solid rgba(255, 255, 255, .14);
+  padding: 12px 14px;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.stat-box .lbl {
+  font-size: 11px;
+  text-transform: uppercase;
+  opacity: .8;
+  letter-spacing: .5px;
+}
+
+.stat-box .val {
+  font-size: 16px;
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0 0 14px;
+  color: #eef2ff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Tables */
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+.custom-table th,
+.custom-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.custom-table th {
+  background: rgba(255, 255, 255, .08);
+  font-weight: 700;
+  color: #d7def0;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tag {
+  background: rgba(139, 124, 255, .17);
+  color: #ded9ff;
+  border: 1px solid rgba(167, 139, 250, .25);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Floating AI chat */
+.floating-chat-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7165ff, #a855f7);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, .25);
+  box-shadow: 0 8px 28px rgba(99, 91, 255, .45);
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  z-index: 99;
+  transition: transform .2s;
+}
+
+.floating-chat-btn:hover { transform: scale(1.06); }
+
+.chat-drawer {
+  position: fixed;
+  bottom: 90px;
+  right: 24px;
+  width: min(380px, calc(100vw - 32px));
+  height: min(520px, calc(100vh - 120px));
+  background: rgba(18, 24, 46, .88);
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .4);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  z-index: 100;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chat-drawer.open { display: flex; }
+
+.chat-header {
+  background: rgba(255, 255, 255, .07);
+  color: #fff;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+}
+
+.chat-body {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: transparent;
+}
+
+.chat-bubble {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.chat-bubble.user {
+  background: linear-gradient(135deg, #7165ff, #8b5cf6);
+  color: #fff;
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-bubble.bot {
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid var(--line);
+  color: #edf0ff;
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+}
+
+.chat-footer {
+  padding: 12px;
+  background: rgba(255, 255, 255, .06);
+  border-top: 1px solid var(--line);
+  display: flex;
+  gap: 8px;
+}
+
+/* Auth */
+.auth-wrap {
+  max-width: 400px;
+  margin: 10vh auto;
+}
+
+.auth-wrap .card {
+  background: rgba(255, 255, 255, .1);
+  border-color: rgba(255, 255, 255, .2);
+}
+
+/* General surfaces and dialogs */
+hr { border: 0; border-top: 1px solid var(--line); }
+
+table { color: var(--text); }
+
+button:focus-visible {
+  outline: 2px solid #c4b5fd;
+  outline-offset: 3px;
+}
+
+/* Responsive layout */
+@media (max-width: 900px) {
+  .app { grid-template-columns: 200px minmax(0, 1fr); }
+  .main { padding: 24px; }
+  .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar {
+    position: relative;
+    height: auto;
+    padding: 16px;
+  }
+  .main { padding: 18px; }
+  .cards, .form-grid { grid-template-columns: 1fr; }
+  .topbar { align-items: flex-start; flex-wrap: wrap; }
+  .chat-drawer { right: 16px; bottom: 84px; }
+}
+
+/* Added workspace sections */
+#guestManagement .form-grid, #settings .form-grid { margin-top: 12px; }
+#guestManagement .guest-row, #analytics .analytics-row { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; padding:14px 0; border-bottom:1px solid var(--line); }
+#guestManagement .guest-row:last-child, #analytics .analytics-row:last-child { border-bottom:0; }
+#guestManagement .guest-meta, #analytics .muted { color:var(--muted); font-size:13px; margin-top:4px; }
+#analytics .report-stat { flex:1 1 150px; min-width:0; padding:18px; border:1px solid var(--line); border-radius:14px; background:var(--surface); }
+#analytics .report-stat strong { display:block; font-size:25px; margin-top:8px; overflow-wrap:anywhere; }
+#settings input[type="checkbox"] { accent-color:var(--primary); }
+body.compact-view .main { padding-top:16px; padding-bottom:16px; }
+body.compact-view .card { padding:14px; }
+@media (max-width:640px) { #analytics .report-stat { flex-basis:100%; } }
+
+.app-logo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border-radius: 10px;
+}
+
+
+</style>
+</head>
+<body>
+
+<div id="authView">
+  <div class="auth-wrap">
+    <div class="card">
+      <div class="brand" style="color:#0f172a"><div class="logo"><img src="/static/logo.png" alt="Logo" class="app-logo"></div>Event Manager Pro</div>
+      <div class="field"><label>Email</label><input id="authEmail" type="email" placeholder="you@example.com"></div>
+      <div class="field"><label>Password</label><input id="authPassword" type="password" placeholder="••••••••"></div>
+      <button class="btn primary" style="width:100%;margin-top:10px" onclick="submitAuth()">Sign In</button>
+      <div id="authMsg"></div>
+    </div>
+  </div>
+</div>
+
+<div id="appView" class="app" style="display:none">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo"><img src="/static/logo.png" alt="Logo" class="app-logo"></div>Event Pro</div>
+    <nav class="nav">
+  <button class="active" onclick="showScreen('dashboard')">Dashboard</button>
+  <button onclick="showScreen('create')">Create Event</button>
+  <button onclick="showScreen('events')">My Events</button>
+  <button onclick="showScreen('tickets')">Tickets & Check-in</button>
+  <button onclick="showScreen('guestManagement')">Guests & Invitations</button>
+  <button onclick="showScreen('analytics')">Analytics & Reports</button>
+  <button onclick="showScreen('settings')">Settings</button>
+</nav>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div><h1 id="pageTitle" style="margin:0;font-size:24px">Dashboard</h1></div>
+      <div><span id="userEmail" style="font-weight:700"></span> <button class="btn secondary" style="padding:4px 10px;margin-left:8px" onclick="logout()">Logout</button></div>
+    </div>
+
+    
+<!-- Premium AI Dashboard -->
+<section id="dashboard" class="screen active dashboard-screen">
+
+  <div class="dashboard-ambient ambient-one"></div>
+  <div class="dashboard-ambient ambient-two"></div>
+
+  <div class="dashboard-content">
+
+    <!-- Welcome Hero -->
+    <div class="dashboard-hero">
+      <div class="hero-copy">
+        <div class="ai-eyebrow">
+          <span class="ai-status-dot"></span>
+          YOUR AI EVENT PLANNING SPACE
+        </div>
+
+        <h1>Make every event <span>extraordinary.</span></h1>
+
+        <p>
+          Plan beautiful events with less stress.
+          Let AI help you organize the details while you focus
+          on making memories.
+        </p>
+
+        <div class="hero-actions">
+          <button class="btn primary hero-button"
+                  onclick="showScreen('create')">
+            <span><img src="/static/logo.png" alt="Logo" class="app-logo"></span> Create New Event
+            <span class="hero-arrow">↗</span>
+          </button>
+
+          <button class="btn secondary hero-secondary"
+                  onclick="showScreen('events')">
+            View My Events <span>→</span>
+          </button>
+        </div>
+
+        <div class="hero-note">
+          <span class="hero-note-icon">✧</span>
+          Your ideas. Your event. A little help from AI.
+        </div>
+      </div>
+
+      <div class="hero-art" aria-hidden="true">
+        <div class="orbit orbit-outer"></div>
+        <div class="orbit orbit-inner"></div>
+        <div class="hero-glow"></div>
+        <div class="hero-core">
+          <div class="core-symbol"><img src="/static/logo.png" alt="Logo" class="app-logo"></div>
+          <div class="core-ring"></div>
+        </div>
+        <span class="floating-star star-one">✧</span>
+        <span class="floating-star star-two"><img src="/static/logo.png" alt="Logo" class="app-logo"></span>
+        <span class="floating-star star-three">✧</span>
+        <span class="floating-label">AI · EVENT MAGIC</span>
+      </div>
+    </div>
+
+    <!-- Simple Event Statistics -->
+    <div class="dashboard-section-heading">
+      <div>
+        <span class="section-kicker">YOUR OVERVIEW</span>
+        <h2>Your planning at a glance</h2>
+      </div>
+      <span class="overview-badge">
+        <span class="ai-status-dot"></span> Your workspace
+      </span>
+    </div>
+
+    <div class="dashboard-stat-grid">
+
+      <div class="dashboard-stat-card stat-blue">
+        <div class="stat-top">
+          <span class="stat-label">Saved Events</span>
+          <span class="stat-icon">▦</span>
+        </div>
+        <div class="metric-val" id="mEvents">0</div>
+        <div class="stat-caption">Your plans, all in one place</div>
+        <div class="stat-decoration"></div>
+      </div>
+
+      <div class="dashboard-stat-card stat-purple">
+        <div class="stat-top">
+          <span class="stat-label">Guests Planned</span>
+          <span class="stat-icon">♧</span>
+        </div>
+        <div class="metric-val" id="mGuests">0</div>
+        <div class="stat-caption">Across your saved events</div>
+        <div class="stat-decoration"></div>
+      </div>
+
+      <div class="dashboard-stat-card stat-cyan">
+        <div class="stat-top">
+          <span class="stat-label">Combined Budgets</span>
+          <span class="stat-icon">₨</span>
+        </div>
+        <div class="metric-val" id="mBudget">PKR 0</div>
+        <div class="stat-caption">Budget planned for your events</div>
+        <div class="stat-decoration"></div>
+      </div>
+
+    </div>
+
+    <!-- Simple Quick Start -->
+    <div class="dashboard-bottom-grid">
+
+      <div class="dashboard-start-card">
+        <div class="start-icon">✧</div>
+        <div class="start-content">
+          <span class="section-kicker">READY WHEN YOU ARE</span>
+          <h2>What are we celebrating?</h2>
+          <p>
+            From weddings and birthdays to family dinners and
+            corporate gatherings, start with your idea and let
+            your AI planner help with the details.
+          </p>
+          <button class="btn primary"
+                  onclick="showScreen('create')">
+            Start Planning <span>→</span>
+          </button>
+        </div>
+        <div class="start-decoration" aria-hidden="true"><img src="/static/logo.png" alt="Logo" class="app-logo"></div>
+      </div>
+
+      <div class="dashboard-tip-card">
+        <div class="tip-topline">
+          <span class="tip-icon">✧</span>
+          <span class="section-kicker">A LITTLE INSPIRATION</span>
+        </div>
+        <h3>Great events start with an idea.</h3>
+        <p>
+          Share your theme, guest count, budget, and special
+          requirements. Your planner will use them to shape
+          your event plan.
+        </p>
+        <button class="text-action"
+                onclick="showScreen('create')">
+          Tell us your idea <span>↗</span>
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+    <!-- Create Event Screen -->
+    <section id="create" class="screen">
+      <div class="card">
+        <h2>Event Details</h2>
+        <div id="createAlert"></div>
+        <div class="form-grid">
+          <div class="field"><label>Event Name</label><input id="event_name" placeholder="Annual Corporate Dinner"></div>
+          <div class="field"><label>Event Type</label><input id="event_type" placeholder="Dinner / Reception"></div>
+          <div class="field"><label>Date</label><input id="date" type="date"></div>
+          <div class="field"><label>Guest Count</label><input id="guests" type="number" value="100"></div>
+          <div class="field"><label>Location</label><input id="location" placeholder="Abbottabad, Pakistan"></div>
+          <div class="field"><label>Budget (PKR)</label><input id="budget" type="number" value="250000"></div>
+        </div>
+        
+    <div class="field" style="margin-top:16px">
+      <label for="special_instructions">✨ Special Instructions for AI (Optional)</label>
+      <textarea
+        id="special_instructions"
+        rows="5"
+        maxlength="5000"
+        placeholder="Tell the AI your special requirements. Example: Use a royal gold-and-white theme, arrange separate family seating, include halal food, provide a VIP area, and keep everything within my budget."
+        style="width:100%;resize:vertical"
+      ></textarea>
+      <small style="color:var(--muted)">
+        Add themes, food preferences, cultural requirements, VIP arrangements,
+        accessibility needs, or any other special requests.
+      </small>
+    </div>
+
+    <button id="btnGenerate" class="btn primary" style="margin-top:12px" onclick="generatePlan()">Generate Structured Plan</button>
+
+      </div>
+
+      <!-- Render Output -->
+      <div id="planResult"></div>
+    </section>
+
+    <!-- Saved Events Screen -->
+    <section id="events" class="screen">
+      <div class="card">
+        <h2>Saved Events</h2>
+        <div id="eventsList"></div>
+      </div>
+    </section>
+    <!-- Tickets & Check-in Screen -->
+<section id="tickets" class="screen">
+
+  <div class="card">
+    <h2>QR Tickets & Check-in</h2>
+    <p style="color:var(--muted)">
+      Create attendee tickets and scan their QR codes at your event.
+    </p>
+
+    <div class="field">
+      <label>Select Event</label>
+      <select id="ticketEvent" onchange="loadTickets()">
+        <option value="">Loading events...</option>
+      </select>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div style="color:var(--muted)">Total Tickets</div>
+        <div class="metric-val" id="ticketTotal">0</div>
+      </div>
+      <div class="card">
+        <div style="color:var(--muted)">Checked In</div>
+        <div class="metric-val" id="ticketChecked">0</div>
+      </div>
+      <div class="card">
+        <div style="color:var(--muted)">Remaining</div>
+        <div class="metric-val" id="ticketRemaining">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <h3>Create Attendee Ticket</h3>
+
+    <div class="field">
+      <label>Attendee Name</label>
+      <input id="attendeeName" placeholder="Enter attendee name">
+    </div>
+
+    <div class="field">
+      <label>Attendee Email (optional)</label>
+      <input id="attendeeEmail" type="email"
+             placeholder="attendee@example.com">
+    </div>
+
+    <button class="btn primary" onclick="createTicket()">
+      Generate QR Ticket
+    </button>
+
+    <div id="ticketMessage" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <h3>Scan Ticket QR Code</h3>
+    <p style="color:var(--muted)">
+      Allow camera access, then point the camera at an attendee's QR code.
+    </p>
+
+    <div id="qr-reader" style="max-width:500px;margin:15px auto"></div>
+
+    <button class="btn primary" onclick="startScanner()">
+      Start Camera Scanner
+    </button>
+
+    <button class="btn secondary" onclick="stopScanner()">
+      Stop Scanner
+    </button>
+
+    <div id="scanResult" style="margin-top:12px"></div>
+
+    <hr style="margin:20px 0">
+
+    <h4>Manual Check-in</h4>
+    <div class="field">
+      <label>Ticket Token</label>
+      <input id="manualTicketToken" placeholder="Enter ticket token">
+    </div>
+
+    <button class="btn secondary" onclick="checkInManual()">
+      Check In Ticket
+    </button>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <h3>Event Tickets</h3>
+    <div id="ticketsList">Select an event to view tickets.</div>
+  </div>
+
+</section>
+
+<!-- Guests & Invitations: guest records reuse the existing persistent ticket API. -->
+<section id="guestManagement" class="screen">
+  <div class="card">
+    <h2>Guests & Invitations</h2>
+    <p style="color:var(--muted)">Manage your attendee list and prepare invitations for saved events.</p>
+    <div class="field">
+      <label for="guestEvent">Select Event</label>
+      <select id="guestEvent" onchange="loadGuestList()"><option value="">Loading events...</option></select>
+    </div>
+    <div class="form-grid">
+      <div class="field"><label for="guestName">Guest Name</label><input id="guestName" placeholder="Guest full name"></div>
+      <div class="field"><label for="guestEmail">Guest Email</label><input id="guestEmail" type="email" placeholder="guest@example.com"></div>
+    </div>
+    <button class="btn primary" onclick="addGuest()">Add Guest & Create Ticket</button>
+    <button class="btn secondary" onclick="prepareEventInvitation()">Prepare Event Invitation</button>
+    <div id="guestMessage" style="margin-top:12px" role="status"></div>
+  </div>
+  <div class="card" style="margin-top:18px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <h3 style="margin:0">Guest List</h3><span id="guestCount" style="color:var(--muted)">0 guests</span>
+    </div>
+    <div id="guestList" style="margin-top:14px">Select an event to view guests.</div>
+  </div>
+</section>
+
+<!-- Analytics are calculated from the user's saved events and ticket/check-in records. -->
+<section id="analytics" class="screen">
+  <div class="card">
+    <h2>Analytics & Reports</h2>
+    <p style="color:var(--muted)">A live overview based on your saved events and ticket check-ins.</p>
+    <button class="btn primary" onclick="loadAnalytics()">Refresh Report</button>
+    <div id="analyticsSummary" class="cards" style="margin-top:18px"></div>
+  </div>
+  <div class="card" style="margin-top:18px">
+    <h3>Event Performance</h3>
+    <div id="analyticsEvents">Loading analytics...</div>
+  </div>
+</section>
+
+<!-- Settings persist in this browser and set defaults for future event forms. -->
+<section id="settings" class="screen">
+  <div class="card">
+    <h2>Settings</h2>
+    <p style="color:var(--muted)">Save your preferred defaults for creating new events. These settings are stored in this browser.</p>
+    <div class="field"><label for="settingLocation">Default Event Location</label><input id="settingLocation" placeholder="e.g. Islamabad, Pakistan"></div>
+    <div class="form-grid">
+      <div class="field"><label for="settingGuests">Default Guest Count</label><input id="settingGuests" type="number" min="1" max="100000" value="100"></div>
+      <div class="field"><label for="settingBudget">Default Budget (PKR)</label><input id="settingBudget" type="number" min="0" value="250000"></div>
+    </div>
+    <label style="display:flex;align-items:center;gap:10px;margin:14px 0"><input id="settingCompact" type="checkbox" style="width:auto"> Use compact spacing in the app</label>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn primary" onclick="saveSettings()">Save Settings</button>
+      <button class="btn secondary" onclick="resetSettings()">Reset Settings</button>
+    </div>
+    <div id="settingsMessage" role="status" style="margin-top:12px"></div>
+  </div>
+  <div class="card" style="margin-top:18px">
+    <h3>Account</h3><p style="color:var(--muted)">Signed in as <strong id="settingsEmail">—</strong></p>
+    <p style="color:var(--muted);font-size:13px">Your events and tickets remain stored by the existing Event Manager Pro backend. Planner defaults and compact view are stored locally in this browser.</p>
+  </div>
+</section>
+  </main>
+</div>
+
+<!-- Floating AI Assistant Button & Drawer -->
+<button class="floating-chat-btn" onclick="toggleChat()">✧</button>
+<div id="chatDrawer" class="chat-drawer">
+  <div class="chat-header">
+    <strong>AI Event Assistant</strong>
+    <button onclick="toggleChat()" style="background:none;border:0;color:#fff;font-size:18px">✕</button>
+  </div>
+  <div id="chatBody" class="chat-body">
+    <div class="chat-bubble bot">Hello! How can I assist with your event planning today?</div>
+  </div>
+  <div class="chat-footer">
+    <input id="chatInput" placeholder="Ask a question..." onkeypress="if(event.key==='Enter') sendChatMessage()">
+    <button class="btn primary" onclick="sendChatMessage()">Send</button>
+  </div>
+</div>
+<!-- Multi-Column Dark Footer -->
+<footer class="footer-grid">
+  <div class="footer-grid-container">
+    <div class="footer-col col-main">
+      <div class="brand-header">
+        <div class="brand-logo"><img src="/static/logo.png" alt="Logo" class="app-logo"></div>
+        <span>Event Manager Pro</span>
+      </div>
+      <p class="brand-desc">AI-assisted planning platform built to simplify venue sourcing, scheduling, and budget optimization.</p>
+    </div>
+
+    <div class="footer-col">
+      <h4>Navigation</h4>
+      <ul>
+        <li><a href="#dashboard">Dashboard</a></li>
+        <li><a href="#create">Create Plan</a></li>
+        <li><a href="#events">My Events</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Platform</h4>
+      <ul>
+        <li><a href="#venues">Venue Engine</a></li>
+        <li><a href="#assistant">AI Copilot</a></li>
+        <li><a href="/health">System Status</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-credit-bar">
+    <div class="credit-inner">
+      <span>© 2026 Event Manager Pro</span>
+      <div class="dev-tag">
+        Developed By <span class="dev-name">Hariz Azam</span> & <span class="dev-name">Zuhaib Qureshi</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+.footer-grid {
+  background: #090d16;
+  color: #94a3b8;
+  padding-top: 48px;
+  border-top: 1px solid #1e293b;
+  font-size: 14px;
+}
+.footer-grid-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px 40px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 40px;
+}
+.brand-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 12px;
+}
+.brand-logo {
+  width: 32px;
+  height: 32px;
+  background: #635bff;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+}
+.brand-desc {
+  line-height: 1.6;
+  color: #64748b;
+  max-width: 320px;
+  font-size: 13px;
+}
+.footer-col h4 {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+}
+.footer-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+.footer-col a {
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.2s;
+}
+.footer-col a:hover {
+  color: #635bff;
+}
+.footer-credit-bar {
+  background: #05080e;
+  padding: 16px 20px;
+  border-top: 1px solid #111827;
+}
+.credit-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+.dev-tag {
+  background: rgba(99, 91, 255, 0.1);
+  border: 1px solid rgba(99, 91, 255, 0.25);
+  padding: 6px 14px;
+  border-radius: 20px;
+  color: #cbd5e1;
+}
+.dev-name {
+  color: #a855f7;
+  font-weight: 700;
+}
+@media (max-width: 768px) {
+  .footer-grid-container {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .credit-inner {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+}
+
+/* ========================================
+   PREMIUM AI DASHBOARD
+======================================== */
+
+#dashboard.dashboard-screen {
+  --dash-bg: #080d1b;
+  --dash-panel: rgba(17, 27, 49, 0.78);
+  --dash-border: rgba(148, 163, 184, 0.14);
+  --dash-text: #f1f5ff;
+  --dash-muted: #96a5c1;
+
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(18px, 3vw, 36px);
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse at 78% 4%,
+      rgba(60, 77, 180, 0.18), transparent 34%),
+    radial-gradient(ellipse at 12% 40%,
+      rgba(20, 112, 210, 0.10), transparent 38%),
+    linear-gradient(145deg, #0b1224 0%, #080d1b 55%, #101027 100%);
+  color: var(--dash-text);
+}
+
+#dashboard.dashboard-screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.15;
+  background-image: radial-gradient(
+    rgba(174, 194, 255, 0.6) 0.7px,
+    transparent 0.7px
+  );
+  background-size: 27px 27px;
+  mask-image: linear-gradient(to bottom, black, transparent 75%);
+}
+
+#dashboard .dashboard-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+#dashboard .dashboard-ambient {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(65px);
+  opacity: 0.35;
+}
+
+#dashboard .ambient-one {
+  width: 250px;
+  height: 250px;
+  top: 5%;
+  right: 5%;
+  background: #4338ca;
+}
+
+#dashboard .ambient-two {
+  width: 200px;
+  height: 200px;
+  bottom: 5%;
+  left: 15%;
+  background: #075985;
+  opacity: 0.22;
+}
+
+/* Welcome hero */
+
+#dashboard .dashboard-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 290px;
+  padding: clamp(25px, 4vw, 44px);
+  overflow: hidden;
+  border: 1px solid rgba(147, 170, 255, 0.20);
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse at 80% 45%,
+      rgba(91, 75, 220, 0.22), transparent 38%),
+    linear-gradient(120deg,
+      rgba(21, 35, 65, 0.95),
+      rgba(13, 19, 39, 0.91));
+  box-shadow: 0 20px 65px rgba(0, 0, 0, 0.19);
+}
+
+#dashboard .hero-copy {
+  position: relative;
+  z-index: 2;
+  max-width: 590px;
+}
+
+#dashboard .ai-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 20px;
+  color: #b9c7ff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+#dashboard .ai-status-dot {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #69d5ff;
+  box-shadow: 0 0 12px rgba(105, 213, 255, 0.75);
+}
+
+#dashboard .dashboard-hero h1 {
+  max-width: 570px;
+  margin: 0;
+  color: #f5f7ff;
+  font-size: clamp(31px, 4.2vw, 49px);
+  line-height: 1.12;
+  letter-spacing: -1.8px;
+  font-weight: 800;
+}
+
+#dashboard .dashboard-hero h1 span {
+  display: inline;
+  color: #9baeff;
+  background: linear-gradient(90deg, #a9bcff, #c7aaff, #7edcff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+#dashboard .dashboard-hero p {
+  max-width: 490px;
+  margin: 17px 0 24px;
+  color: #aab7d0;
+  font-size: 14px;
+  line-height: 1.85;
+}
+
+#dashboard .hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+#dashboard .hero-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 47px;
+  padding: 0 20px;
+  border: 1px solid rgba(184, 198, 255, 0.3);
+  border-radius: 12px;
+  background: linear-gradient(115deg, #4267e8, #7457e9);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 7px 25px rgba(83, 91, 231, 0.28);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#dashboard .hero-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(83, 91, 231, 0.4);
+}
+
+#dashboard .hero-arrow {
+  margin-left: 5px;
+}
+
+#dashboard .hero-secondary {
+  min-height: 47px;
+  padding: 0 17px;
+  border: 1px solid rgba(178, 194, 230, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #d9e2f8;
+}
+
+#dashboard .hero-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  color: #8292b2;
+  font-size: 11px;
+}
+
+#dashboard .hero-note-icon {
+  color: #b9a6ff;
+  font-size: 18px;
+}
+
+/* CSS-created AI orb artwork */
+
+#dashboard .hero-art {
+  position: relative;
+  display: grid;
+  flex: 0 0 245px;
+  width: 245px;
+  height: 245px;
+  place-items: center;
+}
+
+#dashboard .hero-glow {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: #6557ff;
+  filter: blur(60px);
+  opacity: 0.48;
+}
+
+#dashboard .hero-core {
+  position: relative;
+  display: grid;
+  width: 112px;
+  height: 112px;
+  place-items: center;
+  border: 1px solid rgba(202, 209, 255, 0.5);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 25%,
+      rgba(202, 213, 255, 0.55), transparent 27%),
+    linear-gradient(145deg,
+      rgba(111, 118, 255, 0.75),
+      rgba(32, 53, 130, 0.85) 55%,
+      rgba(17, 28, 66, 0.9));
+  box-shadow:
+    0 0 35px rgba(110, 105, 255, 0.48),
+    inset 0 0 24px rgba(190, 199, 255, 0.13);
+}
+
+#dashboard .core-symbol {
+  color: #fff;
+  font-size: 43px;
+  text-shadow: 0 0 22px #b5b9ff;
+}
+
+#dashboard .core-ring {
+  position: absolute;
+  inset: -11px;
+  border: 1px solid rgba(174, 183, 255, 0.38);
+  border-radius: 50%;
+}
+
+#dashboard .orbit {
+  position: absolute;
+  border: 1px solid rgba(145, 158, 255, 0.28);
+  border-radius: 50%;
+}
+
+#dashboard .orbit-outer {
+  width: 220px;
+  height: 220px;
+  transform: rotate(-25deg) scaleY(0.72);
+}
+
+#dashboard .orbit-inner {
+  width: 175px;
+  height: 175px;
+  transform: rotate(40deg) scaleY(0.68);
+}
+
+#dashboard .floating-star {
+  position: absolute;
+  color: #d4ceff;
+  text-shadow: 0 0 15px rgba(154, 145, 255, 0.8);
+}
+
+#dashboard .star-one {
+  top: 30px;
+  right: 45px;
+  font-size: 22px;
+}
+
+#dashboard .star-two {
+  bottom: 47px;
+  left: 28px;
+  color: #8adfff;
+  font-size: 17px;
+}
+
+#dashboard .star-three {
+  top: 58px;
+  left: 32px;
+  font-size: 13px;
+}
+
+#dashboard .floating-label {
+  position: absolute;
+  bottom: 3px;
+  color: #9ba8d4;
+  font-size: 9px;
+  letter-spacing: 2px;
+}
+
+/* Section headings */
+
+#dashboard .dashboard-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 35px 0 17px;
+}
+
+#dashboard .section-kicker {
+  display: block;
+  color: #899bc5;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+}
+
+#dashboard .dashboard-section-heading h2 {
+  margin: 7px 0 0;
+  color: #f0f4ff;
+  font-size: clamp(19px, 2vw, 23px);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+#dashboard .overview-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #aebbd5;
+  font-size: 11px;
+}
+
+/* Statistics cards */
+
+#dashboard .dashboard-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+#dashboard .dashboard-stat-card {
+  position: relative;
+  min-width: 0;
+  min-height: 145px;
+  padding: 21px;
+  overflow: hidden;
+  border: 1px solid var(--dash-border);
+  border-radius: 17px;
+  background: linear-gradient(
+    145deg,
+    rgba(23, 34, 58, 0.88),
+    rgba(14, 22, 41, 0.82)
+  );
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+#dashboard .dashboard-stat-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(148, 173, 255, 0.35);
+}
+
+#dashboard .stat-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#dashboard .stat-label {
+  color: #a8b6d0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+#dashboard .stat-icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(166, 182, 255, 0.17);
+  border-radius: 11px;
+  background: rgba(101, 125, 255, 0.12);
+  color: #b9c5ff;
+  font-size: 20px;
+}
+
+#dashboard .dashboard-stat-card .metric-val {
+  position: relative;
+  z-index: 1;
+  margin-top: 15px;
+  color: #f5f7ff;
+  font-size: clamp(25px, 3vw, 34px);
+  font-weight: 800;
+  letter-spacing: -1px;
+  overflow-wrap: anywhere;
+}
+
+#dashboard #mBudget {
+  font-size: clamp(20px, 2.5vw, 29px);
+}
+
+#dashboard .stat-caption {
+  margin-top: 6px;
+  color: #7f90b0;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+#dashboard .stat-decoration {
+  position: absolute;
+  right: -27px;
+  bottom: -52px;
+  width: 110px;
+  height: 110px;
+  border: 1px solid rgba(108, 146, 255, 0.12);
+  border-radius: 50%;
+  box-shadow: 0 0 0 15px rgba(108, 146, 255, 0.025),
+              0 0 0 30px rgba(108, 146, 255, 0.02);
+}
+
+#dashboard .stat-purple .stat-icon {
+  background: rgba(156, 99, 255, 0.12);
+  color: #d2b5ff;
+}
+
+#dashboard .stat-cyan .stat-icon {
+  background: rgba(43, 190, 226, 0.1);
+  color: #8de6ff;
+}
+
+/* Bottom inspiration panels */
+
+#dashboard .dashboard-bottom-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+#dashboard .dashboard-start-card,
+#dashboard .dashboard-tip-card {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--dash-border);
+  border-radius: 18px;
+  background: rgba(16, 26, 47, 0.82);
+}
+
+#dashboard .dashboard-start-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 17px;
+  padding: 25px;
+  background:
+    radial-gradient(ellipse at 100% 100%,
+      rgba(69, 89, 203, 0.15), transparent 48%),
+    rgba(16, 26, 47, 0.85);
+}
+
+#dashboard .start-icon {
+  display: grid;
+  width: 45px;
+  height: 45px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(155, 167, 255, 0.2);
+  border-radius: 14px;
+  background: rgba(98, 101, 235, 0.15);
+  color: #c4b9ff;
+  font-size: 25px;
+}
+
+#dashboard .start-content {
+  position: relative;
+  z-index: 1;
+}
+
+#dashboard .start-content h2 {
+  margin: 9px 0;
+  color: #f0f4ff;
+  font-size: 19px;
+  letter-spacing: -0.4px;
+}
+
+#dashboard .start-content p,
+#dashboard .dashboard-tip-card p {
+  color: #99a9c5;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+#dashboard .start-content p {
+  max-width: 480px;
+  margin: 0 0 18px;
+}
+
+#dashboard .start-content .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+  padding: 11px 16px;
+  background: linear-gradient(110deg, #4267e8, #7457e9);
+  color: #fff;
+  font-weight: 700;
+}
+
+#dashboard .start-decoration {
+  position: absolute;
+  right: 15px;
+  bottom: 3px;
+  color: rgba(144, 151, 255, 0.08);
+  font-size: 100px;
+}
+
+#dashboard .dashboard-tip-card {
+  padding: 25px;
+  background:
+    radial-gradient(ellipse at 100% 0%,
+      rgba(74, 111, 226, 0.12), transparent 55%),
+    rgba(16, 26, 47, 0.85);
+}
+
+#dashboard .tip-topline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#dashboard .tip-icon {
+  color: #c4b4ff;
+  font-size: 23px;
+}
+
+#dashboard .dashboard-tip-card h3 {
+  margin: 17px 0 9px;
+  color: #edf1ff;
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+#dashboard .dashboard-tip-card p {
+  margin: 0;
+}
+
+#dashboard .text-action {
+  margin-top: 14px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #aebdff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#dashboard .text-action:hover {
+  color: #fff;
+}
+
+/* Responsive layout */
+
+@media (max-width: 900px) {
+  #dashboard .hero-art {
+    flex-basis: 190px;
+    width: 190px;
+    height: 210px;
+    transform: scale(0.88);
+  }
+
+  #dashboard .dashboard-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  #dashboard.dashboard-screen {
+    padding: 13px;
+    border-radius: 15px;
+  }
+
+  #dashboard .dashboard-hero {
+    min-height: auto;
+    padding: 25px 20px;
+    border-radius: 17px;
+  }
+
+  #dashboard .hero-art {
+    display: none;
+  }
+
+  #dashboard .dashboard-hero h1 {
+    font-size: 34px;
+    letter-spacing: -1.2px;
+  }
+
+  #dashboard .dashboard-hero p {
+    font-size: 13px;
+  }
+
+  #dashboard .hero-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  #dashboard .hero-button,
+  #dashboard .hero-secondary {
+    width: 100%;
+  }
+
+  #dashboard .dashboard-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  #dashboard .dashboard-stat-grid {
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+
+  #dashboard .dashboard-stat-card {
+    min-height: 120px;
+  }
+
+  #dashboard .dashboard-stat-card .metric-val {
+    font-size: 30px;
+  }
+
+  #dashboard .dashboard-start-card {
+    padding: 20px 16px;
+    gap: 12px;
+  }
+
+  #dashboard .dashboard-tip-card {
+    padding: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #dashboard *,
+  #dashboard *::before,
+  #dashboard *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ========================================
+   PREMIUM AI DASHBOARD
+======================================== */
+
+#dashboard.dashboard-screen {
+  --dash-bg: #080d1b;
+  --dash-panel: rgba(17, 27, 49, 0.78);
+  --dash-border: rgba(148, 163, 184, 0.14);
+  --dash-text: #f1f5ff;
+  --dash-muted: #96a5c1;
+
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(18px, 3vw, 36px);
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse at 78% 4%,
+      rgba(60, 77, 180, 0.18), transparent 34%),
+    radial-gradient(ellipse at 12% 40%,
+      rgba(20, 112, 210, 0.10), transparent 38%),
+    linear-gradient(145deg, #0b1224 0%, #080d1b 55%, #101027 100%);
+  color: var(--dash-text);
+}
+
+#dashboard.dashboard-screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.15;
+  background-image: radial-gradient(
+    rgba(174, 194, 255, 0.6) 0.7px,
+    transparent 0.7px
+  );
+  background-size: 27px 27px;
+  mask-image: linear-gradient(to bottom, black, transparent 75%);
+}
+
+#dashboard .dashboard-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+#dashboard .dashboard-ambient {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(65px);
+  opacity: 0.35;
+}
+
+#dashboard .ambient-one {
+  width: 250px;
+  height: 250px;
+  top: 5%;
+  right: 5%;
+  background: #4338ca;
+}
+
+#dashboard .ambient-two {
+  width: 200px;
+  height: 200px;
+  bottom: 5%;
+  left: 15%;
+  background: #075985;
+  opacity: 0.22;
+}
+
+/* Welcome hero */
+
+#dashboard .dashboard-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 290px;
+  padding: clamp(25px, 4vw, 44px);
+  overflow: hidden;
+  border: 1px solid rgba(147, 170, 255, 0.20);
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse at 80% 45%,
+      rgba(91, 75, 220, 0.22), transparent 38%),
+    linear-gradient(120deg,
+      rgba(21, 35, 65, 0.95),
+      rgba(13, 19, 39, 0.91));
+  box-shadow: 0 20px 65px rgba(0, 0, 0, 0.19);
+}
+
+#dashboard .hero-copy {
+  position: relative;
+  z-index: 2;
+  max-width: 590px;
+}
+
+#dashboard .ai-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 20px;
+  color: #b9c7ff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+#dashboard .ai-status-dot {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #69d5ff;
+  box-shadow: 0 0 12px rgba(105, 213, 255, 0.75);
+}
+
+#dashboard .dashboard-hero h1 {
+  max-width: 570px;
+  margin: 0;
+  color: #f5f7ff;
+  font-size: clamp(31px, 4.2vw, 49px);
+  line-height: 1.12;
+  letter-spacing: -1.8px;
+  font-weight: 800;
+}
+
+#dashboard .dashboard-hero h1 span {
+  display: inline;
+  color: #9baeff;
+  background: linear-gradient(90deg, #a9bcff, #c7aaff, #7edcff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+#dashboard .dashboard-hero p {
+  max-width: 490px;
+  margin: 17px 0 24px;
+  color: #aab7d0;
+  font-size: 14px;
+  line-height: 1.85;
+}
+
+#dashboard .hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+#dashboard .hero-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 47px;
+  padding: 0 20px;
+  border: 1px solid rgba(184, 198, 255, 0.3);
+  border-radius: 12px;
+  background: linear-gradient(115deg, #4267e8, #7457e9);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 7px 25px rgba(83, 91, 231, 0.28);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#dashboard .hero-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(83, 91, 231, 0.4);
+}
+
+#dashboard .hero-arrow {
+  margin-left: 5px;
+}
+
+#dashboard .hero-secondary {
+  min-height: 47px;
+  padding: 0 17px;
+  border: 1px solid rgba(178, 194, 230, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #d9e2f8;
+}
+
+#dashboard .hero-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  color: #8292b2;
+  font-size: 11px;
+}
+
+#dashboard .hero-note-icon {
+  color: #b9a6ff;
+  font-size: 18px;
+}
+
+/* CSS-created AI orb artwork */
+
+#dashboard .hero-art {
+  position: relative;
+  display: grid;
+  flex: 0 0 245px;
+  width: 245px;
+  height: 245px;
+  place-items: center;
+}
+
+#dashboard .hero-glow {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: #6557ff;
+  filter: blur(60px);
+  opacity: 0.48;
+}
+
+#dashboard .hero-core {
+  position: relative;
+  display: grid;
+  width: 112px;
+  height: 112px;
+  place-items: center;
+  border: 1px solid rgba(202, 209, 255, 0.5);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 25%,
+      rgba(202, 213, 255, 0.55), transparent 27%),
+    linear-gradient(145deg,
+      rgba(111, 118, 255, 0.75),
+      rgba(32, 53, 130, 0.85) 55%,
+      rgba(17, 28, 66, 0.9));
+  box-shadow:
+    0 0 35px rgba(110, 105, 255, 0.48),
+    inset 0 0 24px rgba(190, 199, 255, 0.13);
+}
+
+#dashboard .core-symbol {
+  color: #fff;
+  font-size: 43px;
+  text-shadow: 0 0 22px #b5b9ff;
+}
+
+#dashboard .core-ring {
+  position: absolute;
+  inset: -11px;
+  border: 1px solid rgba(174, 183, 255, 0.38);
+  border-radius: 50%;
+}
+
+#dashboard .orbit {
+  position: absolute;
+  border: 1px solid rgba(145, 158, 255, 0.28);
+  border-radius: 50%;
+}
+
+#dashboard .orbit-outer {
+  width: 220px;
+  height: 220px;
+  transform: rotate(-25deg) scaleY(0.72);
+}
+
+#dashboard .orbit-inner {
+  width: 175px;
+  height: 175px;
+  transform: rotate(40deg) scaleY(0.68);
+}
+
+#dashboard .floating-star {
+  position: absolute;
+  color: #d4ceff;
+  text-shadow: 0 0 15px rgba(154, 145, 255, 0.8);
+}
+
+#dashboard .star-one {
+  top: 30px;
+  right: 45px;
+  font-size: 22px;
+}
+
+#dashboard .star-two {
+  bottom: 47px;
+  left: 28px;
+  color: #8adfff;
+  font-size: 17px;
+}
+
+#dashboard .star-three {
+  top: 58px;
+  left: 32px;
+  font-size: 13px;
+}
+
+#dashboard .floating-label {
+  position: absolute;
+  bottom: 3px;
+  color: #9ba8d4;
+  font-size: 9px;
+  letter-spacing: 2px;
+}
+
+/* Section headings */
+
+#dashboard .dashboard-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 35px 0 17px;
+}
+
+#dashboard .section-kicker {
+  display: block;
+  color: #899bc5;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+}
+
+#dashboard .dashboard-section-heading h2 {
+  margin: 7px 0 0;
+  color: #f0f4ff;
+  font-size: clamp(19px, 2vw, 23px);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+#dashboard .overview-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #aebbd5;
+  font-size: 11px;
+}
+
+/* Statistics cards */
+
+#dashboard .dashboard-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+#dashboard .dashboard-stat-card {
+  position: relative;
+  min-width: 0;
+  min-height: 145px;
+  padding: 21px;
+  overflow: hidden;
+  border: 1px solid var(--dash-border);
+  border-radius: 17px;
+  background: linear-gradient(
+    145deg,
+    rgba(23, 34, 58, 0.88),
+    rgba(14, 22, 41, 0.82)
+  );
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+#dashboard .dashboard-stat-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(148, 173, 255, 0.35);
+}
+
+#dashboard .stat-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#dashboard .stat-label {
+  color: #a8b6d0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+#dashboard .stat-icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(166, 182, 255, 0.17);
+  border-radius: 11px;
+  background: rgba(101, 125, 255, 0.12);
+  color: #b9c5ff;
+  font-size: 20px;
+}
+
+#dashboard .dashboard-stat-card .metric-val {
+  position: relative;
+  z-index: 1;
+  margin-top: 15px;
+  color: #f5f7ff;
+  font-size: clamp(25px, 3vw, 34px);
+  font-weight: 800;
+  letter-spacing: -1px;
+  overflow-wrap: anywhere;
+}
+
+#dashboard #mBudget {
+  font-size: clamp(20px, 2.5vw, 29px);
+}
+
+#dashboard .stat-caption {
+  margin-top: 6px;
+  color: #7f90b0;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+#dashboard .stat-decoration {
+  position: absolute;
+  right: -27px;
+  bottom: -52px;
+  width: 110px;
+  height: 110px;
+  border: 1px solid rgba(108, 146, 255, 0.12);
+  border-radius: 50%;
+  box-shadow: 0 0 0 15px rgba(108, 146, 255, 0.025),
+              0 0 0 30px rgba(108, 146, 255, 0.02);
+}
+
+#dashboard .stat-purple .stat-icon {
+  background: rgba(156, 99, 255, 0.12);
+  color: #d2b5ff;
+}
+
+#dashboard .stat-cyan .stat-icon {
+  background: rgba(43, 190, 226, 0.1);
+  color: #8de6ff;
+}
+
+/* Bottom inspiration panels */
+
+#dashboard .dashboard-bottom-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+#dashboard .dashboard-start-card,
+#dashboard .dashboard-tip-card {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--dash-border);
+  border-radius: 18px;
+  background: rgba(16, 26, 47, 0.82);
+}
+
+#dashboard .dashboard-start-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 17px;
+  padding: 25px;
+  background:
+    radial-gradient(ellipse at 100% 100%,
+      rgba(69, 89, 203, 0.15), transparent 48%),
+    rgba(16, 26, 47, 0.85);
+}
+
+#dashboard .start-icon {
+  display: grid;
+  width: 45px;
+  height: 45px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(155, 167, 255, 0.2);
+  border-radius: 14px;
+  background: rgba(98, 101, 235, 0.15);
+  color: #c4b9ff;
+  font-size: 25px;
+}
+
+#dashboard .start-content {
+  position: relative;
+  z-index: 1;
+}
+
+#dashboard .start-content h2 {
+  margin: 9px 0;
+  color: #f0f4ff;
+  font-size: 19px;
+  letter-spacing: -0.4px;
+}
+
+#dashboard .start-content p,
+#dashboard .dashboard-tip-card p {
+  color: #99a9c5;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+#dashboard .start-content p {
+  max-width: 480px;
+  margin: 0 0 18px;
+}
+
+#dashboard .start-content .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+  padding: 11px 16px;
+  background: linear-gradient(110deg, #4267e8, #7457e9);
+  color: #fff;
+  font-weight: 700;
+}
+
+#dashboard .start-decoration {
+  position: absolute;
+  right: 15px;
+  bottom: 3px;
+  color: rgba(144, 151, 255, 0.08);
+  font-size: 100px;
+}
+
+#dashboard .dashboard-tip-card {
+  padding: 25px;
+  background:
+    radial-gradient(ellipse at 100% 0%,
+      rgba(74, 111, 226, 0.12), transparent 55%),
+    rgba(16, 26, 47, 0.85);
+}
+
+#dashboard .tip-topline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#dashboard .tip-icon {
+  color: #c4b4ff;
+  font-size: 23px;
+}
+
+#dashboard .dashboard-tip-card h3 {
+  margin: 17px 0 9px;
+  color: #edf1ff;
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+#dashboard .dashboard-tip-card p {
+  margin: 0;
+}
+
+#dashboard .text-action {
+  margin-top: 14px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #aebdff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#dashboard .text-action:hover {
+  color: #fff;
+}
+
+/* Responsive layout */
+
+@media (max-width: 900px) {
+  #dashboard .hero-art {
+    flex-basis: 190px;
+    width: 190px;
+    height: 210px;
+    transform: scale(0.88);
+  }
+
+  #dashboard .dashboard-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  #dashboard.dashboard-screen {
+    padding: 13px;
+    border-radius: 15px;
+  }
+
+  #dashboard .dashboard-hero {
+    min-height: auto;
+    padding: 25px 20px;
+    border-radius: 17px;
+  }
+
+  #dashboard .hero-art {
+    display: none;
+  }
+
+  #dashboard .dashboard-hero h1 {
+    font-size: 34px;
+    letter-spacing: -1.2px;
+  }
+
+  #dashboard .dashboard-hero p {
+    font-size: 13px;
+  }
+
+  #dashboard .hero-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  #dashboard .hero-button,
+  #dashboard .hero-secondary {
+    width: 100%;
+  }
+
+  #dashboard .dashboard-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  #dashboard .dashboard-stat-grid {
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+
+  #dashboard .dashboard-stat-card {
+    min-height: 120px;
+  }
+
+  #dashboard .dashboard-stat-card .metric-val {
+    font-size: 30px;
+  }
+
+  #dashboard .dashboard-start-card {
+    padding: 20px 16px;
+    gap: 12px;
+  }
+
+  #dashboard .dashboard-tip-card {
+    padding: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #dashboard *,
+  #dashboard *::before,
+  #dashboard *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* PROFESSIONAL SIDEBAR AND TOP BAR UPGRADE */
+
+.app {
+  grid-template-columns: 255px minmax(0, 1fr);
+}
+
+.sidebar {
+  padding: 30px 18px;
+  background: rgba(8, 13, 29, 0.88);
+  border-right: 1px solid rgba(148, 163, 184, 0.15);
+  box-shadow: 8px 0 35px rgba(0, 0, 0, 0.12);
+}
+
+.brand {
+  gap: 12px;
+  margin-bottom: 42px;
+  padding: 0 8px;
+  font-size: 19px;
+  letter-spacing: -0.4px;
+}
+
+.logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #5278ff, #a16bff);
+  box-shadow: 0 5px 22px rgba(105, 103, 255, 0.35);
+}
+
+.nav {
+  display: grid;
+  gap: 8px;
+}
+
+.nav button {
+  position: relative;
+  width: 100%;
+  min-height: 48px;
+  margin: 0;
+  padding: 13px 14px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  color: #9ba9c4;
+  font-size: 13px;
+  font-weight: 650;
+  transition: all 0.22s ease;
+}
+
+.nav button:hover {
+  transform: translateX(3px);
+  background: rgba(255, 255, 255, 0.055);
+  color: #ffffff;
+}
+
+.nav button.active {
+  color: #ffffff;
+  border-color: rgba(133, 145, 255, 0.22);
+  background: linear-gradient(
+    100deg,
+    rgba(91, 111, 255, 0.22),
+    rgba(135, 91, 235, 0.09)
+  );
+  box-shadow: inset 0 0 20px rgba(103, 108, 255, 0.04);
+}
+
+.nav button.active::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 0 5px 5px 0;
+  background: #9b9dff;
+  box-shadow: 0 0 12px rgba(155, 157, 255, 0.55);
+}
+
+.main {
+  min-width: 0;
+  padding: 30px;
+}
+
+.topbar {
+  position: relative;
+  padding: 17px 20px;
+  margin-bottom: 25px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 17px;
+  background: rgba(16, 25, 46, 0.64);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.10);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+#pageTitle {
+  color: #f4f6ff;
+  font-weight: 750;
+  letter-spacing: -0.6px;
+}
+
+#userEmail {
+  color: #b6c3dc;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+  .app {
+    grid-template-columns: 205px minmax(0, 1fr);
+  }
+
+  .main {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar {
+    position: relative;
+    top: auto;
+    height: auto;
+    padding: 18px;
+  }
+
+  .brand {
+    margin-bottom: 18px;
+  }
+
+  .nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .nav button {
+    padding: 11px 9px;
+    font-size: 12px;
+  }
+
+  .nav button:hover {
+    transform: none;
+  }
+
+  .main {
+    padding: 14px;
+  }
+
+  .topbar {
+    padding: 14px;
+    align-items: flex-start;
+  }
+}
+
+
+.app-logo {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+    flex-shrink: 0;
+    display: block;
+    border-radius: 8px;
+}
+
+
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<script>
+let token = localStorage.getItem("event_manager_token") || "";
+let currentEvent = null;
+const $ = id => document.getElementById(id);
+
+async function api(path, options = {}) {
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {})
+  };
+
+  if (token) {
+    headers.Authorization = "Bearer " + token;
+  }
+
+  const res = await fetch(path, {
+    ...options,
+    headers
+  });
+
+  if (res.status === 204) {
+    return null;
+  }
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.detail || "Request failed");
+  }
+
+  return data;
+}
+
+async function submitAuth() {
+  const email = $("authEmail").value, password = $("authPassword").value;
+  try {
+    const body = new URLSearchParams({ username: email, password });
+    const res = await fetch("/api/auth/token", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail);
+    token = data.access_token;
+    localStorage.setItem("event_manager_token", token);
+    boot();
+  } catch(e) { $("authMsg").textContent = e.message; }
+}
+
+async function boot() {
+  try {
+    const me = await api("/api/auth/me");
+    $("userEmail").textContent = me.email;
+    if ($("settingsEmail")) $("settingsEmail").textContent = me.email;
+    $("authView").style.display = "none";
+    $("appView").style.display = "grid";
+    loadEvents();
+  } catch(e) { logout(); }
+}
+
+function logout() { localStorage.removeItem("event_manager_token"); location.reload(); }
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s =>
+    s.classList.remove("active")
+  );
+
+  $(id).classList.add("active");
+
+  const titles = {
+    dashboard: "Dashboard",
+    create: "Create Event",
+    events: "My Events",
+    tickets: "Tickets & Check-in",
+    guestManagement: "Guests & Invitations",
+    analytics: "Analytics & Reports",
+    settings: "Settings"
+  };
+
+  $("pageTitle").textContent = titles[id] || "Event Manager Pro";
+
+  if (id === "tickets") loadTicketEvents();
+  if (id === "guestManagement") loadGuestEvents();
+  if (id === "analytics") loadAnalytics();
+  if (id === "settings") loadSettings();
+}
+
+function toggleChat() {
+  $("chatDrawer").classList.toggle("open");
+}
+
+
+async function sendChatMessage() {
+  const input = $("chatInput");
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  const chatBody = $("chatBody");
+
+  const userBubble = document.createElement("div");
+  userBubble.className = "chat-bubble user";
+  userBubble.textContent = msg;
+  chatBody.appendChild(userBubble);
+
+  input.value = "";
+  chatBody.scrollTop = chatBody.scrollHeight;
+
+  try {
+    let eventContext = "No event is currently selected.";
+
+    if (currentEvent) {
+      eventContext = `
+Current Event:
+Event Name: ${currentEvent.event_name || "Not provided"}
+Event Type: ${currentEvent.event_type || "Not provided"}
+Date: ${currentEvent.date || "Not provided"}
+Location: ${currentEvent.location || "Not provided"}
+Guests: ${currentEvent.guests || "Not provided"}
+Budget: PKR ${Number(currentEvent.budget || 0).toLocaleString()}
+Venue Preference: ${currentEvent.venue_preference || "Not provided"}
+`;
+    }
+
+    const res = await api("/api/chat", {
+      method: "POST",
+      body: JSON.stringify({
+        message: msg,
+        event_context: eventContext
+      })
+    });
+
+    const botBubble = document.createElement("div");
+    botBubble.className = "chat-bubble bot";
+    botBubble.textContent = res.reply ?? "";
+    chatBody.appendChild(botBubble);
+
+  } catch (e) {
+    const errorBubble = document.createElement("div");
+    errorBubble.className = "chat-bubble bot";
+    errorBubble.style.color = "red";
+    errorBubble.textContent = "Error sending message.";
+    chatBody.appendChild(errorBubble);
+  }
+
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+// Render JSON response into HTML
+function renderStructuredPlan(jsonStr) {
+ 
+  let data;
+
+  try {
+    if (jsonStr && typeof jsonStr === "object") {
+      data = jsonStr;
+    } else {
+      let cleaned = String(jsonStr || "").trim();
+
+      cleaned = cleaned
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/\s*```$/, "")
+        .trim();
+
+      const firstBrace = cleaned.indexOf("{");
+      const lastBrace = cleaned.lastIndexOf("}");
+
+      if (firstBrace !== -1 && lastBrace > firstBrace) {
+        cleaned = cleaned.slice(firstBrace, lastBrace + 1);
+      }
+
+      data = JSON.parse(cleaned);
+    }
+  } catch (e) {
+    const readableText = String(
+      jsonStr || "No saved AI plan available."
+    )
+      .replace(/```json/gi, "")
+      .replace(/```/g, "")
+      .trim();
+
+    return `
+      <div class="card" style="margin-top:20px;">
+        <div class="section-title">AI Generated Event Plan</div>
+        <div style="white-space:pre-wrap;margin-top:15px;">
+          ${readableText}
+        </div>
+      </div>
+    `;
+  }
+
+  const s = data.summary || {};
+
+  // If the saved AI response is not the expected event-plan structure
+  if (!data.summary && !data.venue_recommendations && !data.schedule && !data.budget_breakdown) {
+    return `
+      <div class="card" style="margin-top:20px;">
+        <div class="section-title">AI Generated Event Plan</div>
+
+        <div style="margin-top:15px;">
+          ${Object.entries(data).map(([key, value]) => `
+            <div style="margin-bottom:12px;">
+              <strong>${key}:</strong>
+              <div style="white-space:pre-wrap;margin-top:5px;">
+                ${
+                  typeof value === "object"
+                    ? JSON.stringify(value, null, 2)
+                    : value
+                }
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="plan-container">
+
+      <!-- SUMMARY -->
+      <div class="plan-header-card">
+        <h2>${s.event_name || "Event Plan"}</h2>
+
+        <div>
+          ${s.event_type || ""} · ${s.location || ""}
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="lbl">Date</div>
+            <div class="val">${s.date || "Not provided"}</div>
+          </div>
+
+          <div class="stat-box">
+            <div class="lbl">Guests</div>
+            <div class="val">${s.guests || "Not provided"}</div>
+          </div>
+
+          <div class="stat-box">
+            <div class="lbl">Budget</div>
+            <div class="val">
+              PKR ${Number(s.total_budget || 0).toLocaleString()}
+            </div>
+          </div>
+        </div>
+
+        ${
+          s.key_takeaways?.length
+            ? `
+              <div style="margin-top:20px;">
+                <h3>Key Takeaways</h3>
+                <ul>
+                  ${s.key_takeaways.map(x => `<li>${x}</li>`).join("")}
+                </ul>
+              </div>
+            `
+            : ""
+        }
+      </div>
+
+      <!-- VENUES -->
+      ${
+        data.venue_recommendations?.length
+          ? `
+            <div class="card">
+              <div class="section-title">Venue Recommendations</div>
+
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Venue</th>
+                    <th>Area</th>
+                    <th>Type</th>
+                    <th>Est. Price</th>
+                    <th>Why Suitable</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  ${data.venue_recommendations.map(v => `
+                    <tr>
+                      <td><strong>${v.name || ""}</strong></td>
+                      <td>${v.area || ""}</td>
+                      <td>${v.type || ""}</td>
+                      <td>${v.estimated_price || ""}</td>
+                      <td>${v.why_suitable || ""}</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          `
+          : ""
+      }
+
+      <!-- SCHEDULE -->
+      ${
+        data.schedule?.length
+          ? `
+            <div class="card">
+              <div class="section-title">Event Run of Show</div>
+
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Activity</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  ${data.schedule.map(sc => `
+                    <tr>
+                      <td><strong>${sc.time || ""}</strong></td>
+                      <td>${sc.activity || ""}</td>
+                      <td>${sc.details || ""}</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          `
+          : ""
+      }
+
+      <!-- CATERING & DECOR -->
+      ${
+        data.catering_and_decor
+          ? `
+            <div class="card">
+              <div class="section-title">Catering & Decor</div>
+
+              ${
+                data.catering_and_decor.catering_items?.length
+                  ? `
+                    <h4>Catering</h4>
+                    <ul>
+                      ${data.catering_and_decor.catering_items
+                        .map(x => `<li>${x}</li>`)
+                        .join("")}
+                    </ul>
+                  `
+                  : ""
+              }
+
+              ${
+                data.catering_and_decor.decor_theme
+                  ? `
+                    <p>
+                      <strong>Decor Theme:</strong>
+                      ${data.catering_and_decor.decor_theme}
+                    </p>
+                  `
+                  : ""
+              }
+
+              ${
+                data.catering_and_decor.decor_highlights?.length
+                  ? `
+                    <h4>Decor Highlights</h4>
+                    <ul>
+                      ${data.catering_and_decor.decor_highlights
+                        .map(x => `<li>${x}</li>`)
+                        .join("")}
+                    </ul>
+                  `
+                  : ""
+              }
+            </div>
+          `
+          : ""
+      }
+
+      <!-- BUDGET -->
+      ${
+        data.budget_breakdown?.length
+          ? `
+            <div class="card">
+              <div class="section-title">Budget Breakdown</div>
+
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Percentage</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  ${data.budget_breakdown.map(b => `
+                    <tr>
+                      <td>${b.category || ""}</td>
+                      <td>
+                        PKR ${Number(b.amount_pkr || 0).toLocaleString()}
+                      </td>
+                      <td>${b.percentage || ""}</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          `
+          : ""
+      }
+
+      <!-- ACTION ITEMS -->
+      ${
+        data.action_items?.length
+          ? `
+            <div class="card">
+              <div class="section-title">Action Items</div>
+
+              <ul>
+                ${data.action_items.map(item => `
+                  <li style="margin-bottom:10px;">
+                    <strong>${item.timeframe || ""}:</strong>
+                    ${item.task || ""}
+                  </li>
+                `).join("")}
+              </ul>
+            </div>
+          `
+          : ""
+      }
+
+    </div>
+  `;
+}
+
+async function generatePlan() {
+  const btn = $("btnGenerate");
+  btn.disabled = true;
+  $("planResult").innerHTML = "<p>Generating structured plan...</p>";
+
+  try {
+    
+const payload = {
+  event_name: $("event_name").value,
+  event_type: $("event_type").value,
+  date: $("date").value || new Date().toISOString().slice(0,10),
+  guests: Number($("guests").value),
+  location: $("location").value,
+  budget: Number($("budget").value),
+  venue_preference: "Not sure",
+  special_instructions: $("special_instructions").value.trim()
+};
+
+    const res = await api("/api/create-event", { method: "POST", body: JSON.stringify(payload) });
+
+currentEvent = res.event;
+
+$("planResult").innerHTML = renderStructuredPlan(res.ai_plan);
+
+await loadEvents();
+  } catch(e) {
+    $("planResult").innerHTML = `<div style="color:red;margin-top:10px">${e.message}</div>`;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function loadEvents() {
+  const events = await api("/api/events");
+
+  $("mEvents").textContent = events.length;
+  $("mGuests").textContent = events.reduce((a, b) => a + b.guests, 0);
+  $("mBudget").textContent =
+    "PKR " + events.reduce((a, b) => a + b.budget, 0).toLocaleString();
+
+  $("eventsList").innerHTML = events.length
+    ? events.map(e => `
+      <div class="card" style="margin-bottom:12px;">
+        
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+          
+          <div>
+            <strong style="font-size:17px;">${e.event_name}</strong>
+            <div style="color:var(--muted);margin-top:5px;">
+              ${e.event_type} · ${e.location}
+            </div>
+            <div style="margin-top:5px;">
+              ${e.guests} guests · PKR ${Number(e.budget).toLocaleString()}
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;flex-shrink:0;">
+            <button onclick="viewEvent(${e.id})">
+              View
+            </button>
+
+            <button
+              onclick="deleteEvent(${e.id})"
+              style="background:#dc2626;color:white;"
+            >
+              Delete
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    `).join("")
+    : `
+      <div class="card">
+        <p style="color:var(--muted);">
+          You have no saved events yet.
+        </p>
+      </div>
+    `;
+}
+  
+async function viewEvent(eventId) {
+  try {
+    const event = await api(`/api/events/${eventId}`);
+console.log("Saved AI plan:", event.ai_plan);
+    currentEvent = event;
+
+    $("eventsList").innerHTML = `
+      <div class="card">
+
+        <h2 style="margin-bottom:15px;">
+          ${event.event_name}
+        </h2>
+
+        <h3>Event Details</h3>
+
+        <p><strong>Event Type:</strong> ${event.event_type}</p>
+        <p><strong>Date:</strong> ${event.date}</p>
+        <p><strong>Location:</strong> ${event.location}</p>
+        <p><strong>Guests:</strong> ${event.guests}</p>
+        <p><strong>Budget:</strong> PKR ${Number(event.budget).toLocaleString()}</p>
+        <p><strong>Venue Preference:</strong> ${event.venue_preference}</p>
+
+        <hr style="margin:20px 0;">
+
+        <h3>AI Generated Event Plan</h3>
+
+<div style="margin-top:15px;">
+  ${
+    event.ai_plan
+      ? renderStructuredPlan(event.ai_plan)
+      : "<p style='color:var(--muted);'>No AI plan was saved for this event.</p>"
+  }
+</div>
+
+
+        <div style="margin-top:20px;display:flex;gap:10px;">
+          
+          <button onclick="loadEvents()">
+            ← Back to My Events
+          </button>
+
+          <button
+            onclick="deleteEvent(${event.id})"
+            style="background:#dc2626;color:white;"
+          >
+            Delete Event
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+  } catch (e) {
+    alert("Could not load event: " + e.message);
+  }
+}
+async function deleteEvent(eventId) {
+  const confirmed = confirm(
+    "Are you sure you want to delete this event?\n\nThis action cannot be undone."
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await api(`/api/events/${eventId}`, {
+      method: "DELETE"
+    });
+
+    if (currentEvent && currentEvent.id === eventId) {
+      currentEvent = null;
+    }
+
+    alert("Event deleted successfully.");
+
+    await loadEvents();
+
+  } catch (e) {
+    alert("Could not delete event: " + e.message);
+  }
+}
+
+let ticketScanner = null;
+let scannerBusy = false;
+
+function escapeTicketHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[ch]);
+}
+
+async function loadTicketEvents() {
+  const select = $("ticketEvent");
+  const previousValue = select.value;
+
+  try {
+    const events = await api("/api/events");
+
+    if (!events.length) {
+      select.innerHTML = '<option value="">No saved events</option>';
+      $("ticketsList").textContent =
+        "Create an event first, then you can generate tickets.";
+      $("ticketTotal").textContent = "0";
+      $("ticketChecked").textContent = "0";
+      $("ticketRemaining").textContent = "0";
+      return;
+    }
+
+    select.innerHTML = events.map(event => `
+      <option value="${event.id}">
+        ${escapeTicketHtml(event.event_name)}
+      </option>
+    `).join("");
+
+    select.value = events.some(e => String(e.id) === previousValue)
+      ? previousValue
+      : String(events[0].id);
+
+    await loadTickets();
+  } catch (error) {
+    select.innerHTML = '<option value="">Could not load events</option>';
+    $("ticketsList").textContent = error.message;
+  }
+}
+
+async function createTicket() {
+  const eventId = $("ticketEvent").value;
+  const attendeeName = $("attendeeName").value.trim();
+  const attendeeEmail = $("attendeeEmail").value.trim();
+
+  if (!eventId) {
+    $("ticketMessage").textContent = "Please select an event.";
+    return;
+  }
+
+  if (!attendeeName) {
+    $("ticketMessage").textContent = "Enter the attendee's name.";
+    return;
+  }
+
+  try {
+    $("ticketMessage").textContent = "Creating ticket...";
+
+    await api(`/api/events/${eventId}/tickets`, {
+      method: "POST",
+      body: JSON.stringify({
+        attendee_name: attendeeName,
+        attendee_email: attendeeEmail || null
+      })
+    });
+
+    $("attendeeName").value = "";
+    $("attendeeEmail").value = "";
+    $("ticketMessage").textContent = "Ticket created successfully!";
+
+    await loadTickets();
+  } catch (error) {
+    $("ticketMessage").textContent =
+      "Could not create ticket: " + error.message;
+  }
+}
+
+async function loadTickets() {
+  const eventId = $("ticketEvent").value;
+
+  if (!eventId) return;
+
+  try {
+    const tickets = await api(`/api/events/${eventId}/tickets`);
+
+    const checkedIn = tickets.filter(t => t.checked_in_at).length;
+
+    $("ticketTotal").textContent = tickets.length;
+    $("ticketChecked").textContent = checkedIn;
+    $("ticketRemaining").textContent = tickets.length - checkedIn;
+
+    if (!tickets.length) {
+      $("ticketsList").innerHTML =
+        '<p style="color:var(--muted)">No tickets yet. Create the first one above.</p>';
+      return;
+    }
+
+    $("ticketsList").innerHTML = tickets.map(ticket => `
+      <div class="card" style="margin:12px 0">
+        <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+          <div id="ticket-qr-${ticket.id}"></div>
+
+          <div style="flex:1;min-width:180px">
+            <h3>${escapeTicketHtml(ticket.attendee_name)}</h3>
+            <p>${escapeTicketHtml(ticket.attendee_email || "No email provided")}</p>
+
+            <p>
+              Status:
+              <strong style="color:${ticket.checked_in_at ? "#059669" : "#d97706"}">
+                ${ticket.checked_in_at ? "Checked In" : "Not Checked In"}
+              </strong>
+            </p>
+
+            ${ticket.checked_in_at ? `
+              <small>Checked in at:
+                ${escapeTicketHtml(
+                  new Date(ticket.checked_in_at).toLocaleString()
+                )}
+              </small>
+            ` : ""}
+          </div>
+        </div>
+      </div>
+    `).join("");
+
+    if (typeof QRCode === "undefined") {
+      $("ticketsList").insertAdjacentHTML(
+        "afterbegin",
+        '<p style="color:#dc2626">QR library did not load. Check your internet connection.</p>'
+      );
+      return;
+    }
+
+    tickets.forEach(ticket => {
+      const qrElement = $(`ticket-qr-${ticket.id}`);
+
+      if (qrElement) {
+        new QRCode(qrElement, {
+          text: ticket.token,
+          width: 140,
+          height: 140
+        });
+      }
+    });
+  } catch (error) {
+    $("ticketsList").textContent = "Could not load tickets: " + error.message;
+  }
+}
+
+async function startScanner() {
+  if (typeof Html5Qrcode === "undefined") {
+    $("scanResult").textContent =
+      "QR scanner library did not load. Check your internet connection.";
+    return;
+  }
+
+  if (!$("ticketEvent").value) {
+    $("scanResult").textContent = "Select an event first.";
+    return;
+  }
+
+  if (ticketScanner) {
+    await stopScanner();
+  }
+
+  try {
+    ticketScanner = new Html5Qrcode("qr-reader");
+
+    await ticketScanner.start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 250 }
+      },
+      async decodedText => {
+        if (scannerBusy) return;
+        scannerBusy = true;
+
+        try {
+          const result = await api("/api/tickets/check-in", {
+            method: "POST",
+            body: JSON.stringify({ token: decodedText.trim() })
+          });
+
+          $("scanResult").innerHTML =
+            `<p style="color:#059669"><strong>${escapeTicketHtml(result.message)}</strong><br>` +
+            `Attendee: ${escapeTicketHtml(result.attendee_name)}</p>`;
+
+          await loadTickets();
+        } catch (error) {
+          $("scanResult").innerHTML =
+            `<p style="color:#dc2626">${escapeTicketHtml(error.message)}</p>`;
+        } finally {
+          await stopScanner();
+          scannerBusy = false;
+        }
+      },
+      () => {}
+    );
+
+    $("scanResult").textContent =
+      "Camera started. Point it at a ticket QR code.";
+  } catch (error) {
+    $("scanResult").textContent =
+      "Could not start camera: " + error.message +
+      ". Allow camera access and try again.";
+    ticketScanner = null;
+  }
+}
+
+async function stopScanner() {
+  if (!ticketScanner) return;
+
+  const scanner = ticketScanner;
+  ticketScanner = null;
+
+  try {
+    if (scanner.isScanning) {
+      await scanner.stop();
+    }
+  } catch (error) {
+    // Scanner may already have stopped.
+  }
+
+  try {
+    await scanner.clear();
+  } catch (error) {
+    // Scanner may already have been cleared.
+  }
+}
+
+async function checkInManual() {
+  const ticketToken = $("manualTicketToken").value.trim();
+
+  if (!ticketToken) {
+    $("scanResult").textContent = "Enter a ticket token first.";
+    return;
+  }
+
+  try {
+    const result = await api("/api/tickets/check-in", {
+      method: "POST",
+      body: JSON.stringify({ token: ticketToken })
+    });
+
+    $("scanResult").innerHTML =
+      `<p style="color:#059669"><strong>${escapeTicketHtml(result.message)}</strong><br>` +
+      `Attendee: ${escapeTicketHtml(result.attendee_name)}</p>`;
+
+    $("manualTicketToken").value = "";
+    await loadTickets();
+  } catch (error) {
+    $("scanResult").innerHTML =
+      `<p style="color:#dc2626">${escapeTicketHtml(error.message)}</p>`;
+  }
+}
+
+
+// ---------------- Added sections: guests, analytics, and settings ----------------
+function localSettings() {
+  try { return JSON.parse(localStorage.getItem("event_manager_settings") || "{}"); }
+  catch (_) { return {}; }
+}
+
+function loadSettings() {
+  const settings = localSettings();
+  $("settingLocation").value = settings.location || "";
+  $("settingGuests").value = settings.guests || 100;
+  $("settingBudget").value = settings.budget ?? 250000;
+  $("settingCompact").checked = Boolean(settings.compact);
+  $("settingsEmail").textContent = $("userEmail").textContent || "—";
+}
+
+function saveSettings() {
+  const guests = Number($("settingGuests").value);
+  const budget = Number($("settingBudget").value);
+  if (!Number.isInteger(guests) || guests < 1 || guests > 100000) {
+    $("settingsMessage").textContent = "Guest count must be between 1 and 100,000."; return;
+  }
+  if (!Number.isFinite(budget) || budget < 0) {
+    $("settingsMessage").textContent = "Budget must be zero or greater."; return;
+  }
+  const settings = { location: $("settingLocation").value.trim(), guests, budget, compact: $("settingCompact").checked };
+  localStorage.setItem("event_manager_settings", JSON.stringify(settings));
+  document.body.classList.toggle("compact-view", settings.compact);
+  $("settingsMessage").textContent = "Settings saved. Defaults will be used for your next event.";
+}
+
+function resetSettings() {
+  localStorage.removeItem("event_manager_settings");
+  document.body.classList.remove("compact-view");
+  loadSettings();
+  $("settingsMessage").textContent = "Settings reset to the app defaults.";
+}
+
+function applySavedSettings() {
+  const settings = localSettings();
+  document.body.classList.toggle("compact-view", Boolean(settings.compact));
+  if ($("location") && settings.location) $("location").value = settings.location;
+  if ($("guests") && settings.guests) $("guests").value = settings.guests;
+  if ($("budget") && settings.budget !== undefined) $("budget").value = settings.budget;
+}
+
+async function loadGuestEvents() {
+  const select = $("guestEvent");
+  const previous = select.value;
+  try {
+    const events = await api("/api/events");
+    if (!events.length) {
+      select.innerHTML = '<option value="">No saved events</option>';
+      $("guestList").textContent = "Create an event first, then add guests.";
+      $("guestCount").textContent = "0 guests";
+      $("guestMessage").textContent = "";
+      return;
+    }
+    select.innerHTML = events.map(e => `<option value="${e.id}">${escapeTicketHtml(e.event_name)}</option>`).join("");
+    select.value = events.some(e => String(e.id) === previous) ? previous : String(events[0].id);
+    await loadGuestList();
+  } catch (error) {
+    select.innerHTML = '<option value="">Could not load events</option>';
+    $("guestList").textContent = error.message;
+  }
+}
+
+async function loadGuestList() {
+  const eventId = $("guestEvent").value;
+  if (!eventId) return;
+  try {
+    const [tickets, event] = await Promise.all([
+      api(`/api/events/${eventId}/tickets`), api(`/api/events/${eventId}`)
+    ]);
+    $("guestCount").textContent = `${tickets.length} guest${tickets.length === 1 ? "" : "s"}`;
+    if (!tickets.length) {
+      $("guestList").innerHTML = '<p style="color:var(--muted)">No guests added yet. Add your first guest above.</p>';
+      return;
+    }
+    $("guestList").innerHTML = tickets.map(t => `
+      <div class="guest-row">
+        <div><strong>${escapeTicketHtml(t.attendee_name)}</strong><div class="guest-meta">${escapeTicketHtml(t.attendee_email || "No email provided")} · ${t.checked_in_at ? "Checked in" : "Not checked in"}</div></div>
+        <button class="btn secondary" onclick="inviteGuest(${Number(t.id)})">Prepare Email</button>
+      </div>`).join("");
+    window.currentGuestEvent = event;
+    window.currentGuestTickets = tickets;
+  } catch (error) {
+    $("guestList").textContent = "Could not load guest list: " + error.message;
+  }
+}
+
+async function addGuest() {
+  const eventId = $("guestEvent").value;
+  const name = $("guestName").value.trim();
+  const email = $("guestEmail").value.trim();
+  if (!eventId) { $("guestMessage").textContent = "Create or select an event first."; return; }
+  if (!name) { $("guestMessage").textContent = "Enter the guest's name."; return; }
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { $("guestMessage").textContent = "Enter a valid email address."; return; }
+  try {
+    await api(`/api/events/${eventId}/tickets`, { method:"POST", body:JSON.stringify({ attendee_name:name, attendee_email:email || null }) });
+    $("guestName").value = ""; $("guestEmail").value = "";
+    $("guestMessage").textContent = "Guest saved and ticket created successfully.";
+    await loadGuestList();
+  } catch (error) { $("guestMessage").textContent = "Could not add guest: " + error.message; }
+}
+
+function openInvitationEmail(email, event, guestName) {
+  const subject = `Invitation: ${event.event_name || "Our Event"}`;
+  const body = `Hello ${guestName || "there"},\n\nYou are invited to ${event.event_name || "our event"}.\nDate: ${event.date || "To be confirmed"}\nLocation: ${event.location || "To be confirmed"}\n\nPlease contact the organizer if you have any questions.\n\nWe hope to see you there!`;
+  const url = `mailto:${encodeURIComponent(email || "")}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = url;
+}
+
+async function inviteGuest(ticketId) {
+  try {
+    const tickets = window.currentGuestTickets || [];
+    const guest = tickets.find(t => Number(t.id) === Number(ticketId));
+    const event = window.currentGuestEvent;
+    if (!guest || !event) { $("guestMessage").textContent = "Refresh the guest list and try again."; return; }
+    if (!guest.attendee_email) { $("guestMessage").textContent = "This guest has no email. Add an email address in Tickets & Check-in, or edit the guest record in the backend."; return; }
+    openInvitationEmail(guest.attendee_email, event, guest.attendee_name);
+  } catch (error) { $("guestMessage").textContent = error.message; }
+}
+
+async function prepareEventInvitation() {
+  const eventId = $("guestEvent").value;
+  if (!eventId) { $("guestMessage").textContent = "Select an event first."; return; }
+  try {
+    const event = await api(`/api/events/${eventId}`);
+    const body = `You are invited to ${event.event_name}.\nDate: ${event.date}\nLocation: ${event.location}\n\nWe hope to see you there!`;
+    window.location.href = `mailto:?subject=${encodeURIComponent("Invitation: " + event.event_name)}&body=${encodeURIComponent(body)}`;
+    $("guestMessage").textContent = "Your email app should open with a draft invitation. The app does not send emails automatically.";
+  } catch (error) { $("guestMessage").textContent = error.message; }
+}
+
+async function loadAnalytics() {
+  const summary = $("analyticsSummary"), list = $("analyticsEvents");
+  if (!summary || !list) return;
+  summary.innerHTML = '<p>Loading report...</p>'; list.textContent = "Loading event performance...";
+  try {
+    const events = await api("/api/events");
+    const perEvent = await Promise.all(events.map(async event => {
+      try {
+        const tickets = await api(`/api/events/${event.id}/tickets`);
+        const checked = tickets.filter(t => t.checked_in_at).length;
+        return { event, tickets: tickets.length, checked, rate: tickets.length ? Math.round(checked / tickets.length * 100) : 0 };
+      } catch (_) { return { event, tickets: 0, checked: 0, rate: 0, failed: true }; }
+    }));
+    const ticketTotal = perEvent.reduce((sum, x) => sum + x.tickets, 0);
+    const checkedTotal = perEvent.reduce((sum, x) => sum + x.checked, 0);
+    const plannedGuests = events.reduce((sum, x) => sum + Number(x.guests || 0), 0);
+    const budget = events.reduce((sum, x) => sum + Number(x.budget || 0), 0);
+    const stats = [
+      ["Saved Events", events.length], ["Planned Guests", plannedGuests.toLocaleString()],
+      ["Tickets Created", ticketTotal.toLocaleString()], ["Checked In", checkedTotal.toLocaleString()],
+      ["Check-in Rate", `${ticketTotal ? Math.round(checkedTotal / ticketTotal * 100) : 0}%`],
+      ["Combined Budget", `PKR ${budget.toLocaleString()}`]
+    ];
+    summary.innerHTML = stats.map(([label, value]) => `<div class="report-stat"><span class="muted">${label}</span><strong>${escapeTicketHtml(value)}</strong></div>`).join("");
+    if (!events.length) { list.innerHTML = '<p style="color:var(--muted)">No saved events yet. Create an event to start building your report.</p>'; return; }
+    list.innerHTML = perEvent.map(x => `<div class="analytics-row"><div><strong>${escapeTicketHtml(x.event.event_name)}</strong><div class="muted">${escapeTicketHtml(x.event.date || "Date not set")} · ${escapeTicketHtml(x.event.location || "Location not set")}</div><div class="muted">Budget: PKR ${Number(x.event.budget || 0).toLocaleString()} · Planned guests: ${Number(x.event.guests || 0).toLocaleString()}</div></div><div style="text-align:right"><strong>${x.tickets} tickets</strong><div class="muted">${x.checked} checked in (${x.rate}%)</div>${x.failed ? '<div class="muted">Ticket data could not be loaded</div>' : ''}</div></div>`).join("");
+  } catch (error) {
+    summary.innerHTML = `<p style="color:#fb7185">Could not load report: ${escapeTicketHtml(error.message)}</p>`;
+    list.textContent = "Check that the backend is running, then refresh the report.";
+  }
+}
+
+// Keep preferences applied after reload and use them for new event form defaults.
+document.addEventListener("DOMContentLoaded", applySavedSettings);
+
+</script>
+</body>
+</html>
